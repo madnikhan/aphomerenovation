@@ -429,17 +429,36 @@ export async function getQuoteRequests(filters?: {
     throw new Error("Firebase is not initialized. Please check your environment variables.");
   }
   try {
-    const constraints: QueryConstraint[] = [orderBy("createdAt", "desc")];
+    let q;
     
-    if (filters?.status) {
-      constraints.push(where("status", "==", filters.status));
+    // Build query based on filters
+    if (filters?.status && filters?.source) {
+      // Both filters - requires composite index
+      q = query(
+        collection(db, "quoteRequests"),
+        where("status", "==", filters.status),
+        where("source", "==", filters.source),
+        orderBy("createdAt", "desc")
+      );
+    } else if (filters?.status) {
+      // Status filter only
+      q = query(
+        collection(db, "quoteRequests"),
+        where("status", "==", filters.status),
+        orderBy("createdAt", "desc")
+      );
+    } else if (filters?.source) {
+      // Source filter only
+      q = query(
+        collection(db, "quoteRequests"),
+        where("source", "==", filters.source),
+        orderBy("createdAt", "desc")
+      );
+    } else {
+      // No filters - just order by createdAt
+      q = query(collection(db, "quoteRequests"), orderBy("createdAt", "desc"));
     }
     
-    if (filters?.source) {
-      constraints.push(where("source", "==", filters.source));
-    }
-
-    const q = query(collection(db, "quoteRequests"), ...constraints);
     const querySnapshot = await getDocs(q);
     
     return querySnapshot.docs.map((doc) => {
@@ -452,8 +471,31 @@ export async function getQuoteRequests(filters?: {
         preferredDate: data.preferredDate?.toDate(),
       } as QuoteRequest;
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error getting quote requests:", error);
+    // If index error, try without orderBy
+    if (error?.code === "failed-precondition" || error?.message?.includes("index")) {
+      console.warn("Firebase index required. Fetching without orderBy...");
+      try {
+        const q = query(collection(db, "quoteRequests"));
+        const querySnapshot = await getDocs(q);
+        const results = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate() || new Date(),
+            updatedAt: data.updatedAt?.toDate() || new Date(),
+            preferredDate: data.preferredDate?.toDate(),
+          } as QuoteRequest;
+        });
+        // Sort manually
+        return results.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      } catch (fallbackError) {
+        console.error("Fallback query also failed:", fallbackError);
+        throw fallbackError;
+      }
+    }
     throw error;
   }
 }

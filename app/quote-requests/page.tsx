@@ -43,12 +43,19 @@ export default function QuoteRequestsPage() {
   const loadRequests = async () => {
     try {
       setIsLoading(true);
+      console.log("Loading quote requests...");
       const allRequests = await getQuoteRequests();
+      console.log("Quote requests loaded:", allRequests.length, allRequests);
       setRequests(allRequests);
       setFilteredRequests(allRequests);
-    } catch (error) {
+      
+      if (allRequests.length === 0) {
+        console.warn("No quote requests found. Check Firebase Console to verify data exists.");
+      }
+    } catch (error: any) {
       console.error("Error loading quote requests:", error);
-      alert("Failed to load quote requests. Please check your Firebase configuration.");
+      const errorMessage = error?.message || "Unknown error";
+      alert(`Failed to load quote requests: ${errorMessage}\n\nCheck:\n1. Firebase is configured\n2. You're logged in\n3. Firestore security rules allow reads\n4. Check browser console for details`);
     } finally {
       setIsLoading(false);
     }

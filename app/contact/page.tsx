@@ -28,9 +28,10 @@ export default function ContactPage() {
     try {
       // If subject is "quote", save as quote request
       if (formData.subject === "quote") {
+        console.log("Saving quote request from contact form:", formData);
         const { saveQuoteRequest } = await import("@/lib/firebase-quotes");
         
-        await saveQuoteRequest({
+        const requestId = await saveQuoteRequest({
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -39,15 +40,18 @@ export default function ContactPage() {
           source: "contact",
           status: "new",
         });
+        
+        console.log("Quote request saved successfully with ID:", requestId);
       }
       
       // TODO: Send email notification for all contact forms
       // For now, just show success message
       setIsSubmitted(true);
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting form:", error);
-      alert("There was an error submitting your message. Please try again or contact us directly.");
+      const errorMessage = error?.message || "Unknown error";
+      alert(`Error submitting form: ${errorMessage}\n\nPlease check:\n1. Firebase is configured\n2. Firestore security rules allow writes\n3. Check browser console for details`);
     }
   };
 

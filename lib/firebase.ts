@@ -26,13 +26,23 @@ if (typeof window !== "undefined") {
         app = getApps()[0];
       }
 
-      // Initialize Firestore
+      // Initialize Firestore with settings
       db = getFirestore(app);
+      
+      // Enable offline persistence (optional, helps with connection issues)
+      // enableIndexedDbPersistence(db).catch((err) => {
+      //   if (err.code == 'failed-precondition') {
+      //     console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time.");
+      //   } else if (err.code == 'unimplemented') {
+      //     console.warn("The current browser does not support all of the features required for persistence.");
+      //   }
+      // });
 
       // Initialize Auth
       auth = getAuth(app);
       
       console.log("Firebase initialized successfully");
+      console.log("Firebase Project ID:", firebaseConfig.projectId);
     } catch (error) {
       console.error("Firebase initialization error:", error);
     }

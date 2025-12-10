@@ -84,7 +84,9 @@ export default function BookingForm() {
       // Save quote request to Firebase
       const { saveQuoteRequest } = await import("@/lib/firebase-quotes");
       
-      await saveQuoteRequest({
+      console.log("Saving quote request:", formData);
+      
+      const requestId = await saveQuoteRequest({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -98,10 +100,12 @@ export default function BookingForm() {
         status: "new",
       });
       
+      console.log("Quote request saved successfully with ID:", requestId);
       setIsSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting booking:", error);
-      alert("There was an error submitting your booking. Please try again or contact us directly.");
+      const errorMessage = error?.message || "Unknown error";
+      alert(`Error submitting booking: ${errorMessage}\n\nPlease check:\n1. Firebase is configured\n2. Firestore security rules allow writes\n3. Check browser console for details`);
     } finally {
       setIsSubmitting(false);
     }
