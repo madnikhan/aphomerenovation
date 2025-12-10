@@ -1,14 +1,43 @@
 import Link from "next/link";
 import { Building2, CheckCircle2, ArrowRight, Clock, Shield, Award } from "lucide-react";
+import ServiceSchema from "@/components/ServiceSchema";
 
 export const metadata = {
-  title: "Chimney Removal Services UK - Professional & Safe",
-  description: "Professional chimney removal services across the UK. Safe, compliant, and expert removal with full structural assessment and building regulation compliance.",
+  title: "Chimney Removal Services UK - Professional & Safe | AK Home Renovation",
+  description: "Professional chimney removal services across the UK. Safe, compliant, and expert removal with full structural assessment and building regulation compliance. Free quotes available.",
+  keywords: [
+    "chimney removal",
+    "chimney removal services UK",
+    "professional chimney removal",
+    "chimney removal Birmingham",
+    "safe chimney removal",
+    "building regulation compliance",
+    "structural assessment",
+  ],
+  openGraph: {
+    title: "Chimney Removal Services UK - Professional & Safe",
+    description: "Professional chimney removal services across the UK. Safe, compliant, and expert removal with full structural assessment.",
+    type: "website",
+    url: "https://akhomerenovation.co.uk/services/chimney-removal",
+  },
 };
 
 export default function ChimneyRemovalPage() {
   return (
-    <div className="pt-20 pb-20 bg-gray-50 min-h-screen">
+    <>
+      <ServiceSchema
+        name="Chimney Removal Services"
+        description="Professional and safe chimney removal services across the United Kingdom. Full structural assessment, building regulation compliance, and expert removal with complete clean-up."
+        provider={{
+          name: "AK Home Renovation",
+          url: "https://akhomerenovation.co.uk",
+          telephone: "+44 7466 113917",
+          email: "info@akhomerenovation.co.uk",
+        }}
+        areaServed={["United Kingdom"]}
+        serviceType="Chimney Removal"
+      />
+      <div className="pt-20 pb-20 bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-8">
@@ -147,6 +176,7 @@ export default function ChimneyRemovalPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

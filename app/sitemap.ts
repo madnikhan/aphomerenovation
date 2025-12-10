@@ -9,10 +9,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: baseUrl,
       lastModified: now,
       changeFrequency: 'weekly',
-      priority: 1,
+      priority: 1.0,
     },
     {
       url: `${baseUrl}/services`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/book`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.9,

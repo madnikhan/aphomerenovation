@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, Mail, Phone, MapPin, Plus, LogOut, FileText, TrendingUp, User, ArrowLeft } from "lucide-react";
 import { getClients, getQuotes, type Client, type Quote } from "@/lib/firebase-quotes";
 import Link from "next/link";
+import { useAppManifest } from "@/hooks/useAppManifest";
 
 export default function ClientsPage() {
   const router = useRouter();
@@ -16,6 +17,9 @@ export default function ClientsPage() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [clientQuotes, setClientQuotes] = useState<Quote[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Load app manifest for PWA
+  useAppManifest();
 
   useEffect(() => {
     // Check authentication via API

@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LoginForm from "@/components/LoginForm";
 import { saveQuote, saveClient, type Quote } from "@/lib/firebase-quotes";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useAppManifest } from "@/hooks/useAppManifest";
 
 interface ServiceItem {
   id: string;
@@ -174,8 +176,10 @@ export default function QuoteBuilder() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  
+  // PWA hooks
+  const { showInstallPrompt, handleInstallClick, handleDismissInstall } = usePWAInstall(isAuthenticated);
+  useAppManifest();
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: "",
     email: "",
@@ -227,84 +231,8 @@ export default function QuoteBuilder() {
     }
   }, []);
 
-  // Add manifest link for PWA
-  useEffect(() => {
-    if (typeof window === "undefined" || !isAuthenticated) return;
-
-    // Add manifest link to head
-    const link = document.createElement("link");
-    link.rel = "manifest";
-    link.href = "/quote-builder-manifest.json";
-    document.head.appendChild(link);
-
-    return () => {
-      // Cleanup on unmount
-      const existingLink = document.querySelector('link[rel="manifest"][href="/quote-builder-manifest.json"]');
-      if (existingLink) {
-        document.head.removeChild(existingLink);
-      }
-    };
-  }, [isAuthenticated]);
-
-  // PWA Installation prompt
-  useEffect(() => {
-    if (typeof window === "undefined" || !isAuthenticated) return;
-
-    // Check if already installed
-    const isInstalled = window.matchMedia("(display-mode: standalone)").matches || 
-                       (window.navigator as any).standalone === true ||
-                       document.referrer.includes("android-app://");
-
-    if (isInstalled) {
-      return; // Already installed, don't show prompt
-    }
-
-    // Check if user has dismissed the prompt before
-    const installPromptDismissed = localStorage.getItem("installPromptDismissed");
-    if (installPromptDismissed) {
-      return;
-    }
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      // Show prompt after a delay
-      setTimeout(() => {
-        setShowInstallPrompt(true);
-      }, 3000);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    };
-  }, [isAuthenticated]);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) {
-      // Fallback: show instructions
-      alert("To install this app:\n\nChrome/Edge: Click the install icon in the address bar\nSafari (iOS): Tap Share > Add to Home Screen\nFirefox: Not supported");
-      return;
-    }
-
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === "accepted") {
-      console.log("User accepted the install prompt");
-    } else {
-      console.log("User dismissed the install prompt");
-    }
-    
-    setDeferredPrompt(null);
-    setShowInstallPrompt(false);
-  };
-
-  const handleDismissInstall = () => {
-    setShowInstallPrompt(false);
-    localStorage.setItem("installPromptDismissed", "true");
-  };
+  // App manifest is loaded via useAppManifest hook
+  // PWA installation is handled via usePWAInstall hook
 
   const handleLogout = async () => {
     try {
@@ -902,7 +830,7 @@ export default function QuoteBuilder() {
   return (
     <div className={`min-h-screen bg-gray-50 ${showPrintView ? "print:bg-white" : ""}`}>
       {/* PWA Install Prompt */}
-      {showInstallPrompt && !showPrintView && (
+      {showInstallPrompt && !showPrintView && isAuthenticated && (
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 bg-white border-2 border-[#202845] rounded-lg shadow-2xl p-4 animate-slide-up">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
@@ -910,8 +838,8 @@ export default function QuoteBuilder() {
                 <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Install Quote Builder</h3>
-                <p className="text-sm text-gray-600">Install as an app for quick access</p>
+                <h3 className="font-bold text-gray-900">Install Quote Manager</h3>
+                <p className="text-sm text-gray-600">Install as an app for quick access to quotes and clients</p>
               </div>
             </div>
             <button
@@ -938,11 +866,6 @@ export default function QuoteBuilder() {
             </button>
           </div>
         </div>
-      )}
-
-      {/* Add manifest link for PWA */}
-      {isMounted && isAuthenticated && (
-        <link rel="manifest" href="/quote-builder-manifest.json" />
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">

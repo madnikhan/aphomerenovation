@@ -3,8 +3,25 @@ import { Building2, Paintbrush, Hammer, Wrench, Home, ArrowRight } from "lucide-
 import ServiceCard from "@/components/ServiceCard";
 
 export const metadata = {
-  title: "Our Services - House Refurbishment & Renovation",
-  description: "Comprehensive house refurbishment services across the UK. Chimney removal, plastering, painting, decoration, partitions, boarding, sealing, and complete renovations.",
+  title: "Our Services - House Refurbishment & Renovation | AK Home Renovation",
+  description: "Comprehensive house refurbishment services across the UK. Chimney removal, plastering, painting, decoration, partitions, boarding, sealing, and complete renovations. Free quotes available.",
+  keywords: [
+    "house refurbishment services",
+    "home renovation services UK",
+    "chimney removal",
+    "plastering services",
+    "painting and decoration",
+    "partition installation",
+    "boarding and sealing",
+    "whole house renovation",
+    "home improvement services",
+  ],
+  openGraph: {
+    title: "Our Services - House Refurbishment & Renovation",
+    description: "Comprehensive house refurbishment services across the UK. Quality workmanship you can trust.",
+    type: "website",
+    url: "https://akhomerenovation.co.uk/services",
+  },
 };
 
 const services = [

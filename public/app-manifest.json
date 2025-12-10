@@ -1,0 +1,52 @@
+{
+  "name": "AK Home Renovation - Quote & Client Manager",
+  "short_name": "Quote Manager",
+  "description": "Quote builder and client management app for AK Home Renovation",
+  "start_url": "/quote-builder",
+  "display": "standalone",
+  "background_color": "#202845",
+  "theme_color": "#202845",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "en-GB",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "New Quote",
+      "short_name": "New Quote",
+      "description": "Create a new quote",
+      "url": "/quote-builder",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "View Quotes",
+      "short_name": "Quotes",
+      "description": "View all quotes",
+      "url": "/quotes",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Clients",
+      "short_name": "Clients",
+      "description": "Manage clients",
+      "url": "/clients",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    }
+  ]
+}
+

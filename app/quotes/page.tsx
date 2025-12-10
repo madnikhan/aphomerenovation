@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, Filter, Eye, Edit, Trash2, Mail, Download, Plus, LogOut, TrendingUp, BarChart3, PieChart, Copy, FileDown, User } from "lucide-react";
 import { getQuotes, deleteQuote, updateQuote, type Quote } from "@/lib/firebase-quotes";
 import Link from "next/link";
+import { useAppManifest } from "@/hooks/useAppManifest";
 import {
   LineChart,
   Line,
@@ -33,6 +34,9 @@ export default function QuotesPage() {
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(true);
+
+  // Load app manifest for PWA
+  useAppManifest();
 
   useEffect(() => {
     // Check authentication via API
