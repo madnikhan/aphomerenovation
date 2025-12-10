@@ -1,0 +1,28 @@
+{
+  "name": "AK Home Renovation - Professional House Refurbishment Services UK",
+  "short_name": "AK Home Renovation",
+  "description": "Professional house refurbishment and renovation services across the UK",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#202845",
+  "theme_color": "#202845",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "home", "lifestyle"],
+  "lang": "en-GB",
+  "dir": "ltr"
+}
+
