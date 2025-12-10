@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, Suspense, useState } from "react";
+import { usePathname } from "next/navigation";
 
 function GoogleAnalyticsInner() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const gaId = process.env.NEXT_PUBLIC_GA_ID;
     if (!gaId) {
       console.warn("Google Analytics ID not found. Add NEXT_PUBLIC_GA_ID to your .env.local file.");
@@ -35,13 +41,16 @@ function GoogleAnalyticsInner() {
     return () => {
       // Cleanup is handled by Next.js
     };
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
+    if (!mounted) return;
+    
     const gaId = process.env.NEXT_PUBLIC_GA_ID;
     if (!gaId) return;
 
-    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "");
+    // Use window.location instead of useSearchParams to avoid SSR issues
+    const url = window.location.pathname + window.location.search;
     
     // Track page view
     if (typeof window !== "undefined" && (window as any).gtag) {
@@ -49,7 +58,7 @@ function GoogleAnalyticsInner() {
         page_path: url,
       });
     }
-  }, [pathname, searchParams]);
+  }, [pathname, mounted]);
 
   return null;
 }
