@@ -63,6 +63,25 @@ export interface Client {
   totalValue: number;
 }
 
+export interface QuoteRequest {
+  id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  address?: string;
+  postcode?: string;
+  service: string;
+  description: string;
+  preferredDate?: Date;
+  preferredTime?: string;
+  source: "contact" | "booking" | "other";
+  status: "new" | "contacted" | "quoted" | "converted" | "closed";
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  convertedToQuoteId?: string;
+}
+
 // Save a new quote
 export async function saveQuote(quote: Omit<Quote, "id" | "createdAt" | "updatedAt">): Promise<string> {
   if (!db) {
@@ -377,6 +396,103 @@ export async function getAnalytics(startDate?: Date, endDate?: Date): Promise<An
     };
   } catch (error) {
     console.error("Error getting analytics:", error);
+    throw error;
+  }
+}
+
+// Save a quote request from customer
+export async function saveQuoteRequest(request: Omit<QuoteRequest, "id" | "createdAt" | "updatedAt">): Promise<string> {
+  if (!db) {
+    throw new Error("Firebase is not initialized. Please check your environment variables.");
+  }
+  try {
+    const requestData = {
+      ...request,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      preferredDate: request.preferredDate ? Timestamp.fromDate(new Date(request.preferredDate)) : null,
+    };
+    const docRef = await addDoc(collection(db, "quoteRequests"), requestData);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error saving quote request:", error);
+    throw error;
+  }
+}
+
+// Get all quote requests
+export async function getQuoteRequests(filters?: {
+  status?: QuoteRequest["status"];
+  source?: QuoteRequest["source"];
+}): Promise<QuoteRequest[]> {
+  if (!db) {
+    throw new Error("Firebase is not initialized. Please check your environment variables.");
+  }
+  try {
+    const constraints: QueryConstraint[] = [orderBy("createdAt", "desc")];
+    
+    if (filters?.status) {
+      constraints.push(where("status", "==", filters.status));
+    }
+    
+    if (filters?.source) {
+      constraints.push(where("source", "==", filters.source));
+    }
+
+    const q = query(collection(db, "quoteRequests"), ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date(),
+        preferredDate: data.preferredDate?.toDate(),
+      } as QuoteRequest;
+    });
+  } catch (error) {
+    console.error("Error getting quote requests:", error);
+    throw error;
+  }
+}
+
+// Update quote request status
+export async function updateQuoteRequestStatus(
+  requestId: string,
+  status: QuoteRequest["status"],
+  convertedToQuoteId?: string
+): Promise<void> {
+  if (!db) {
+    throw new Error("Firebase is not initialized. Please check your environment variables.");
+  }
+  try {
+    const updateData: any = {
+      status,
+      updatedAt: Timestamp.now(),
+    };
+    
+    if (convertedToQuoteId) {
+      updateData.convertedToQuoteId = convertedToQuoteId;
+    }
+    
+    await updateDoc(doc(db, "quoteRequests", requestId), updateData);
+  } catch (error) {
+    console.error("Error updating quote request:", error);
+    throw error;
+  }
+}
+
+// Delete quote request
+export async function deleteQuoteRequest(requestId: string): Promise<void> {
+  if (!db) {
+    throw new Error("Firebase is not initialized. Please check your environment variables.");
+  }
+  try {
+    await deleteDoc(doc(db, "quoteRequests", requestId));
+  } catch (error) {
+    console.error("Error deleting quote request:", error);
     throw error;
   }
 }

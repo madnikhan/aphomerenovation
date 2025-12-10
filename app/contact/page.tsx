@@ -24,10 +24,31 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    
+    try {
+      // If subject is "quote", save as quote request
+      if (formData.subject === "quote") {
+        const { saveQuoteRequest } = await import("@/lib/firebase-quotes");
+        
+        await saveQuoteRequest({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          service: "General Inquiry",
+          description: formData.message,
+          source: "contact",
+          status: "new",
+        });
+      }
+      
+      // TODO: Send email notification for all contact forms
+      // For now, just show success message
+      setIsSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("There was an error submitting your message. Please try again or contact us directly.");
+    }
   };
 
   if (isSubmitted) {

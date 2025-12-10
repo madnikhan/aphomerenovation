@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Filter, Eye, Edit, Trash2, Mail, Download, Plus, LogOut, TrendingUp, BarChart3, PieChart, Copy, FileDown, User } from "lucide-react";
+import { Search, Filter, Eye, Edit, Trash2, Mail, Download, Plus, LogOut, TrendingUp, BarChart3, PieChart, Copy, FileDown, User, FileText } from "lucide-react";
 import { getQuotes, deleteQuote, updateQuote, type Quote } from "@/lib/firebase-quotes";
 import Link from "next/link";
 import { useAppManifest } from "@/hooks/useAppManifest";
@@ -348,6 +348,13 @@ export default function QuotesPage() {
               >
                 <Plus className="w-5 h-5" />
                 <span>New Quote</span>
+              </Link>
+              <Link
+                href="/quote-requests"
+                className="flex-1 sm:flex-none flex items-center justify-center space-x-2 px-6 py-3 bg-white border-2 border-[#202845] text-[#202845] rounded-lg hover:bg-[#202845] hover:text-white transition-colors shadow-md hover:shadow-lg"
+              >
+                <FileText className="w-5 h-5" />
+                <span>Quote Requests</span>
               </Link>
               <Link
                 href="/clients"

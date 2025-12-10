@@ -80,16 +80,28 @@ export default function BookingForm() {
   const submitBooking = async () => {
     setIsSubmitting(true);
     
-    // Simulate API call - replace with actual API endpoint
     try {
-      // Here you would send the booking data to your backend
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Save quote request to Firebase
+      const { saveQuoteRequest } = await import("@/lib/firebase-quotes");
       
-      console.log("Booking submitted:", formData);
+      await saveQuoteRequest({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address || "",
+        postcode: formData.postcode || "",
+        service: formData.service,
+        description: formData.description,
+        preferredDate: formData.date || undefined,
+        preferredTime: formData.time || undefined,
+        source: "booking",
+        status: "new",
+      });
+      
       setIsSubmitted(true);
     } catch (error) {
       console.error("Error submitting booking:", error);
-      alert("There was an error submitting your booking. Please try again.");
+      alert("There was an error submitting your booking. Please try again or contact us directly.");
     } finally {
       setIsSubmitting(false);
     }
