@@ -10,29 +10,36 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Admin password - in production, this should be stored securely
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
 
-    if (password === ADMIN_PASSWORD) {
-      // Store authentication token
-      localStorage.setItem("admin_authenticated", "true");
-      localStorage.setItem("admin_login_time", Date.now().toString());
-      // Force a hard navigation to ensure state is refreshed
-      window.location.href = "/quote-builder";
-    } else {
-      setError("Invalid password. Please try again.");
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Successful login - redirect to quote builder
+        window.location.href = "/quote-builder";
+      } else {
+        setError(data.error || "Invalid password. Please try again.");
+        setPassword("");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An error occurred. Please try again.");
       setPassword("");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (

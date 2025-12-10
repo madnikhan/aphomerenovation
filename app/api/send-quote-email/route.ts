@@ -1,5 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { isAuthenticated } from "@/lib/auth";
+
+// Simple rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const limit = rateLimitMap.get(ip);
+
+  if (!limit || now > limit.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + 60 * 1000 }); // 1 minute window
+    return true;
+  }
+
+  if (limit.count >= 10) {
+    return false; // Max 10 emails per minute per IP
+  }
+
+  limit.count++;
+  return true;
+}
 
 // Initialize Resend only if API key is available
 const getResend = () => {
@@ -12,6 +33,24 @@ const getResend = () => {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const authenticated = await isAuthenticated();
+    if (!authenticated) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // Rate limiting
+    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { to, quoteNumber, customerName, pdfBase64, quoteDate, total, validUntil } = body;
 
@@ -92,16 +131,16 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("Resend error:", error);
       return NextResponse.json(
-        { error: "Failed to send email", details: error },
+        { error: "Failed to send email" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Email sending error:", error);
     return NextResponse.json(
-      { error: "Failed to send email", details: error.message },
+      { error: "Failed to send email" },
       { status: 500 }
     );
   }

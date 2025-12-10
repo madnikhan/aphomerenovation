@@ -18,26 +18,26 @@ export default function ClientsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check authentication
-    if (typeof window !== "undefined") {
-      const authenticated = localStorage.getItem("admin_authenticated") === "true";
-      const loginTime = localStorage.getItem("admin_login_time");
-      
-      if (authenticated && loginTime) {
-        const timeDiff = Date.now() - parseInt(loginTime);
-        const hoursDiff = timeDiff / (1000 * 60 * 60);
+    // Check authentication via API
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/check");
+        const data = await response.json();
         
-        if (hoursDiff < 24) {
+        if (data.authenticated) {
           setIsAuthenticated(true);
           loadData();
         } else {
-          localStorage.removeItem("admin_authenticated");
-          localStorage.removeItem("admin_login_time");
           router.push("/quote-builder");
         }
-      } else {
+      } catch (error) {
+        console.error("Auth check error:", error);
         router.push("/quote-builder");
       }
+    };
+    
+    if (typeof window !== "undefined") {
+      checkAuth();
     }
   }, [router]);
 
@@ -99,9 +99,12 @@ export default function ClientsPage() {
     setClientQuotes(clientQuotesList);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("admin_authenticated");
-    localStorage.removeItem("admin_login_time");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     router.push("/quote-builder");
   };
 

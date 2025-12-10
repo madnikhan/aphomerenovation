@@ -206,30 +206,25 @@ export default function QuoteBuilder() {
   useEffect(() => {
     setIsMounted(true);
     
-    // Only check authentication on client side
-    if (typeof window !== "undefined") {
-      const authenticated = localStorage.getItem("admin_authenticated") === "true";
-      const loginTime = localStorage.getItem("admin_login_time");
-      
-      // Check if login is still valid (24 hours)
-      if (authenticated && loginTime) {
-        const timeDiff = Date.now() - parseInt(loginTime);
-        const hoursDiff = timeDiff / (1000 * 60 * 60);
-        
-        if (hoursDiff < 24) {
-          setIsAuthenticated(true);
-        } else {
-          // Session expired
-          localStorage.removeItem("admin_authenticated");
-          localStorage.removeItem("admin_login_time");
-          setIsAuthenticated(false);
-        }
-      } else {
+    // Check authentication via API
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/check");
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated || false);
+      } catch (error) {
+        console.error("Auth check error:", error);
         setIsAuthenticated(false);
+      } finally {
+        setIsCheckingAuth(false);
       }
-    }
+    };
     
-    setIsCheckingAuth(false);
+    if (typeof window !== "undefined") {
+      checkAuth();
+    } else {
+      setIsCheckingAuth(false);
+    }
   }, []);
 
   // Add manifest link for PWA
@@ -311,9 +306,12 @@ export default function QuoteBuilder() {
     localStorage.setItem("installPromptDismissed", "true");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("admin_authenticated");
-    localStorage.removeItem("admin_login_time");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
     setIsAuthenticated(false);
     router.push("/quote-builder");
     router.refresh();
